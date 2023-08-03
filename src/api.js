@@ -1,46 +1,15 @@
 import Notiflix from 'notiflix';
 import SimpleLightbox from 'simplelightbox';
 import 'simplelightbox/dist/simple-lightbox.min.css';
-import axios from 'axios';
+import { getImages } from './index.js';
 
 const search = document.getElementById('search');
 const renderImages = document.getElementById('gallery');
 let input = document.getElementById('search-form');
-let perPage = 40;
-let page = 1;
 let loadmoreButton = document.querySelector('.load-more');
 
-const totalPages = 500 / perPage;
-
-loadmoreButton.style.display = 'none';
-
-loadmoreButton.addEventListener('click', () => {
-  if (page > totalPages) {
-    return Notiflix.Notify.failure(
-      "We're sorry, but you've reached the end of search results."
-    );
-  }
-  getImages()
-    .then(event => {
-      fetchImages(event);
-    })
-    .catch(error => console.log(error));
-});
-
-async function getImages() {
-  let key = '38505152-191c0f15af7e4e6ba82d13323';
-  const input = document.getElementById('search-form').value;
-  try {
-    const response = await axios.get(
-      `https://pixabay.com/api/?key=${key}&q=${input}&image_type=photo&orientation=horizontal&safesearch=true&page=${page}&per_page=${perPage}`
-    );
-    return response;
-  } catch (error) {
-    Notiflix.Notify.warning('Error: ' + error);
-  }
-}
-
-async function fetchImages() {
+async function fetchImages(event) {
+  event.preventDefault();
   if (input.value !== '') {
     let url = await getImages();
     Notiflix.Notify.success(`Hooray! We found ${url.data.totalHits} images.`);
@@ -70,16 +39,10 @@ async function fetchImages() {
       )
       .join(' ');
     setTimeout(() => {
-      if (page === 1) {
-        renderImages.innerHTML = markup;
-      } else {
-        renderImages.innerHTML += markup;
-      }
-      page += 1;
+      renderImages.innerHTML = markup;
       const lightbox = new SimpleLightbox('.photo-card a');
       lightbox.on('show.simplelightbox');
-      loadmoreButton.style.display = 'flex';
-    }, 2200);
+    }, 1200);
   } else {
     return Notiflix.Notify.failure(
       'Sorry, there are no images matching your search query. Please try again.'
